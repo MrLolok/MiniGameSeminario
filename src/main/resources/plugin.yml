@@ -1,0 +1,9 @@
+name: ${project.name}
+description: ${project.description}
+version: ${project.version}
+author: Lorenzo
+main: org.unina.seminario.MiniGamePlugin
+api-version: 1.20
+commands:
+  game:
+    description: "Comando principale del gioco tiro al bersaglio"
