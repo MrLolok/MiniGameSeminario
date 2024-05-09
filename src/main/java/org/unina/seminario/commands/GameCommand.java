@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unina.seminario.MiniGamePlugin;
 import org.unina.seminario.game.TargetShootingGame;
+import org.unina.seminario.inventory.GameListInventory;
 
 public class GameCommand implements CommandExecutor {
     @Override
@@ -17,16 +18,32 @@ public class GameCommand implements CommandExecutor {
         }
         switch (args[0].toUpperCase()) {
             case "CREATE":
-                TargetShootingGame game = MiniGamePlugin.getInstance().getService().create();
-                sender.sendMessage("§aPartita creata con successo!");
                 if (sender instanceof Player player) {
+                    if (MiniGamePlugin.getInstance().getService().getGame(player) != null) {
+                        player.sendMessage("§dSei già all'interno di un game!!!");
+                        break;
+                    }
+
+                    // crea un nuovo game
+                    TargetShootingGame game = MiniGamePlugin.getInstance().getService().create();
+                    sender.sendMessage("§aPartita creata con successo!");
                     game.addPlayer(player);
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1F, 1F);
+                    game.start();
                 }
-                game.start();
                 break;
             case "LIST":
                 sender.sendMessage("§aCaricamento delle partite in corso...");
+                if (sender instanceof Player player) {
+                    GameListInventory inventory = new GameListInventory(MiniGamePlugin.getInstance());
+                    player.openInventory(inventory.getInventory());
+                }
+                break;
+            case "STOP":
+                if (sender instanceof Player player) {
+                    if (MiniGamePlugin.getInstance().getService().getGame(player) != null)
+                        MiniGamePlugin.getInstance().getService().getGame(player).stop();
+                }
                 break;
             default:
                 sender.sendMessage("§cHai sbagliato comando!");

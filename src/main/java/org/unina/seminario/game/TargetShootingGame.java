@@ -9,6 +9,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.unina.seminario.MiniGamePlugin;
 import org.unina.seminario.items.ItemBuilder;
 import org.unina.seminario.tasks.FireballTask;
@@ -42,6 +44,10 @@ public class TargetShootingGame {
 
     public void removePlayer(Player player) {
         scoreboard.remove(player.getUniqueId());
+
+        // se non ci sono più persone chiudi il game
+        if (scoreboard.isEmpty())
+            this.stop();
     }
 
     public int getScore(Player player) {
@@ -73,9 +79,19 @@ public class TargetShootingGame {
 
     public void stop() {
         started = false;
-        if (target == null)
+        if (target != null)
             target.remove();
+
+        for(UUID uuid : scoreboard.keySet()) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player == null) continue;
+            player.getInventory().clear();
+
+            player.sendTitle("§aParita Terminata", "Hai fatto " + scoreboard.get(uuid) + " punti", 20, 60, 20);
+        }
+
         scoreboard.clear();
+
     }
 
     private ItemStack getBow() {
@@ -91,10 +107,15 @@ public class TargetShootingGame {
     private Entity getZombieTarget() {
         if (scoreboard.isEmpty()) return null;
         Player player = Bukkit.getPlayer(scoreboard.keySet().iterator().next());
+        if (player == null) return null;
         Location location = player.getLocation();
         Entity entity = location.getWorld().spawnEntity(location, EntityType.ZOMBIE);
         Zombie zombie = (Zombie) entity;
         zombie.setAI(false);
+        zombie.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 99999, 1, false, false));
+
+        // In caso di esplosioni o altri danni che porterebbero alla morte del target
+        zombie.addPotionEffect(new PotionEffect(PotionEffectType.HARM, 99999, 4, false, false));
         zombie.setCustomName("§6§lTARGET");
         zombie.setCustomNameVisible(true);
         return entity;
