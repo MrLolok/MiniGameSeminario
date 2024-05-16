@@ -14,6 +14,10 @@ public class TargetShootingService {
         return game;
     }
 
+    public List<TargetShootingGame> getGames() {
+        return games;
+    }
+
     public TargetShootingGame getGame(Player player) {
         for (TargetShootingGame game : games)
             if (game.isPlaying(player))
